@@ -14,8 +14,11 @@
                 "python.linting.flake8Enabled": true,
                 "python.linting.enabled": true,
                 "editor.defaultFormatter": "ms-python.black-formatter",
-                "python.formatting.provider": "none",
-                "editor.formatOnSave": true
+                "editor.formatOnSave": true,
+                "flake8.args": [
+                    "--max-line-length=88",
+                    "--exclude=*_test*"
+                ]
             },
             // Add the IDs of extensions you want installed when the container is created.
             "extensions": [
