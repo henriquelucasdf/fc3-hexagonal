@@ -1,0 +1,40 @@
+{
+    "name": "fc3-hex-py38",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    // The 'workspaceFolder' property is the path VS Code should open by default when
+    // connected. Corresponds to a volume mount in .devcontainer/docker-compose.yml
+    "workspaceFolder": "/home/python/app",
+    // Set *default* container specific settings.json values on container create.
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Set *default* container specific settings.json values on container create.
+            "settings": {
+                "python.linting.flake8Enabled": true,
+                "python.linting.enabled": true,
+                "editor.defaultFormatter": "ms-python.black-formatter",
+                "python.formatting.provider": "none",
+                "editor.formatOnSave": true
+            },
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-toolsai.jupyter",
+                "ms-python.black-formatter",
+                "ms-toolsai.vscode-jupyter-cell-tags",
+                "ms-toolsai.jupyter-renderers",
+                "MS-CEINTL.vscode-language-pack-pt-BR",
+                "sourcery.sourcery",
+                "ms-python.flake8"
+            ]
+        }
+    }
+    // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
+    // "shutdownAction": "none",
+    // Uncomment the next line to use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "uname -a",
+    // Comment out to connect as root instead. To add a non-root user, see: https://aka.ms/vscode-remote/containers/non-root.
+    //"remoteUser": "python"
+}
