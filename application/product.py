@@ -1,46 +1,8 @@
-from abc import ABC, abstractmethod
+from application.product_interfaces import ProductInterface
 
 
 class ProductException(Exception):
     pass
-
-
-class ProductInterface(ABC):
-    def __init__(
-        self, id: str, name: str, status: str = "disabled", price: float = 0
-    ) -> None:
-        self.id = id
-        self.name = name
-        self.status = status
-        self.price = price
-
-    @abstractmethod
-    def is_valid(self) -> bool:
-        raise NotImplementedError
-
-    @abstractmethod
-    def enable(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def disable(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_id(self) -> str:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_name(self) -> str:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_status(self) -> str:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_price(self) -> float:
-        raise NotImplementedError
 
 
 ENABLED = "enabled"
