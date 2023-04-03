@@ -1,23 +1,12 @@
-from uuid import uuid4
 from abc import ABC, abstractmethod
+from pydantic import BaseModel, UUID4
 
 
-class ProductInterface(ABC):
-    def __init__(
-        self,
-        name: str,
-        id: str = str(uuid4()),
-        status: str = "disabled",
-        price: float = 0,
-    ) -> None:
-        self.id = id
-        self.name = name
-        self.status = status
-        self.price = price
-
-    @abstractmethod
-    def is_valid(self) -> bool:
-        raise NotImplementedError
+class ProductInterface(ABC, BaseModel):
+    id: UUID4
+    name: str
+    status: str
+    price: float
 
     @abstractmethod
     def enable(self) -> None:

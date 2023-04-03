@@ -10,7 +10,7 @@ class ProductServiceException(Exception):
 
 
 class ProductService(ProductServiceInterface):
-    def __init__(self, persistence: ProductPersistenceInterface):
+    def __init__(self, persistence: ProductPersistenceInterface) -> None:
         self.persistence = persistence
 
     def get(self, id: str) -> ProductInterface:

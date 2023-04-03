@@ -1,3 +1,6 @@
+from uuid import uuid4
+from pydantic import UUID4, Field, confloat, constr
+from typing import Union, Literal
 from application.product_interfaces import ProductInterface
 
 
@@ -5,32 +8,15 @@ class ProductException(Exception):
     pass
 
 
-ENABLED = "enabled"
-DISABLED = "disabled"
-
-
 class Product(ProductInterface):
-    def is_valid(self) -> bool:
-
-        self._validate_types()
-
-        if self.status not in [ENABLED, DISABLED]:
-            raise ProductException(f"Status must be '{ENABLED}' or '{DISABLED}'")
-
-        if self.price < 0:
-            raise ProductException("Price must be greater or equal than zero.")
-
-        if len(self.id) == 0:
-            raise ProductException("Id must be defined")
-
-        if len(self.name) == 0:
-            raise ProductException("Name must be defined")
-
-        return True
+    id: UUID4 = Field(default_factory=uuid4)
+    name: constr(min_length=5)
+    status: Union[Literal["enabled"], Literal["disabled"]] = "disabled"
+    price: confloat(allow_inf_nan=False, ge=0.0)
 
     def enable(self) -> None:
         if self.price > 0:
-            self.status = ENABLED
+            self.status = "enabled"
 
         else:
             raise ProductException(
@@ -39,12 +25,12 @@ class Product(ProductInterface):
 
     def disable(self) -> None:
         if self.price == 0:
-            self.status = DISABLED
+            self.status = "disabled"
         else:
             raise ProductException("The price must be zero to disable the product")
 
     def get_id(self) -> str:
-        return self.id
+        return self.id.__str__()
 
     def get_name(self) -> str:
         return self.name
@@ -54,23 +40,3 @@ class Product(ProductInterface):
 
     def get_price(self) -> float:
         return self.price
-
-    def _validate_types(self):
-
-        types = {
-            self.id: str,
-            self.name: str,
-            self.status: str,
-            self.price: (float, int),
-        }
-        type_check = {key: isinstance(key, value) for key, value in types.items()}
-
-        for key, value in type_check.items():
-            if not value:
-                if isinstance(types[key], tuple):
-                    formatted_type = [item.__name__ for item in types[key]]
-                else:
-                    formatted_type = types[key].__name__
-                raise ProductException(
-                    f"The input '{key}' must be an '{formatted_type}'"
-                )
