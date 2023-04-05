@@ -49,6 +49,7 @@ def test_product_get_id_must_return_uuid_string():
 
     assert isinstance(prod.get_id(), str)
     assert prod_id.__str__() == prod.get_id()
+    assert prod_id.__str__() == prod.id
 
 
 def test_product_must_return_name():

@@ -1,5 +1,5 @@
 from uuid import uuid4
-from pydantic import UUID4, Field, confloat, constr
+from pydantic import UUID4, Field, confloat, constr, validator
 from typing import Union, Literal
 from application.product_interfaces import ProductInterface
 
@@ -13,6 +13,10 @@ class Product(ProductInterface):
     name: constr(min_length=5)
     status: Union[Literal["enabled"], Literal["disabled"]] = "disabled"
     price: confloat(allow_inf_nan=False, ge=0.0)
+
+    @validator("id", always=True)
+    def transform_id_in_str(cls, v):
+        return v.__str__()
 
     def enable(self) -> None:
         if self.price > 0:
@@ -30,7 +34,7 @@ class Product(ProductInterface):
             raise ProductException("The price must be zero to disable the product")
 
     def get_id(self) -> str:
-        return self.id.__str__()
+        return self.id
 
     def get_name(self) -> str:
         return self.name
