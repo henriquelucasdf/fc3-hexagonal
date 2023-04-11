@@ -46,9 +46,10 @@ class ProductDBPersistence(ProductPersistenceInterface):
             db_product = session.get(ProductDB, product.id)
 
             if db_product is None:
-                db_product = ProductDB(**product.dict())
-                session.add(db_product)
+                new_product_db = ProductDB(**product.dict())
+                session.add(new_product_db)
                 session.commit()
+
             else:
                 for key, value in product.dict().items():
                     setattr(db_product, key, value)
@@ -57,7 +58,7 @@ class ProductDBPersistence(ProductPersistenceInterface):
                 session.commit()
                 session.refresh(db_product)
 
-        return db_product
+        return product
 
     @staticmethod
     def _get_engine(engine: str):
@@ -66,5 +67,7 @@ class ProductDBPersistence(ProductPersistenceInterface):
             raise ValueError(
                 f"The engine {engine} is invalid! Valid values are {ENGINES.keys()}"
             )
+
+        SQLModel.metadata.create_all(sql_engine)
 
         return sql_engine

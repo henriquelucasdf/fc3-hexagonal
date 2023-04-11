@@ -42,19 +42,19 @@ class TestProductDBPersistence:
 
     def test_save_must_add_new_product(self):
         new_product = Product(name="new_product", status="enabled", price=20)
-        _ = ProductDBPersistence.save(new_product)
+        returned_product = ProductDBPersistence.save(new_product)
 
         product_query = ProductDBPersistence.get(id=new_product.id)
-        assert product_query == new_product
+        assert product_query == new_product == returned_product
 
     def test_save_must_update_existing_product(self):
         updated_product = self.valid_product_1.copy()
         updated_product.name = "updated_product"
         updated_product.price = 12345
 
-        _ = ProductDBPersistence.save(updated_product)
+        returned_product = ProductDBPersistence.save(updated_product)
         product_query = ProductDBPersistence.get(id=updated_product.id)
-        assert product_query == updated_product
+        assert product_query == updated_product == returned_product
 
     def test_get_engine_must_raise_value_error(self):
         with pytest.raises(ValueError):

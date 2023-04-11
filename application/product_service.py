@@ -1,3 +1,4 @@
+from warnings import warn
 from pydantic import ValidationError
 from application.product import Product
 from application.product_interfaces import (
@@ -47,8 +48,32 @@ class ProductService(ProductServiceInterface):
 
         return result
 
-    def disable(self):
-        pass
+    def disable(self, product: ProductInterface) -> ProductInterface:
+        if product.status == "disabled":
+            warn("The product is already disabled")
 
-    def enable(self):
-        pass
+        product.disable()
+
+        try:
+            result = self.persistence.save(product)
+        except PersistenceException as e:
+            raise ProductServiceException(
+                f"An error occurred when trying to disable the product: {e}"
+            ) from e
+
+        return result
+
+    def enable(self, product: ProductInterface) -> ProductInterface:
+        if product.status == "enabled":
+            warn("The product is already enabled")
+
+        product.enable()
+
+        try:
+            result = self.persistence.save(product)
+        except PersistenceException as e:
+            raise ProductServiceException(
+                f"An error occurred when trying to enable the product: {e}"
+            ) from e
+
+        return result
