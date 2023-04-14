@@ -15,4 +15,6 @@ WORKDIR /home/python/app
 
 ENV PIP_ENV_VENV_IN_PROJECT=True
 
+ENV PYTHONPATH="$PYTHONPATH:/home/python/app" 
+
 CMD [ "tail", "-f", "/dev/null" ]

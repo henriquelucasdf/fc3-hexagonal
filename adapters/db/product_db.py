@@ -2,10 +2,13 @@ from sqlmodel import SQLModel, Session, create_engine, select, Field
 
 from application.product import Product
 from application.product_service import PersistenceException
-from application.product_interfaces import ProductInterface, ProductPersistenceInterface
+from application.product_interfaces import (
+    ProductInterface,
+    ProductPersistenceInterface,
+)
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
-ENGINES = {"sqlite": create_engine(url="sqlite://", echo=True)}
+ENGINES = {"sqlite": create_engine(url="sqlite://", echo=False)}
 
 
 class ProductDB(SQLModel, table=True):
@@ -18,7 +21,6 @@ class ProductDB(SQLModel, table=True):
 class ProductDBPersistence(ProductPersistenceInterface):
     @classmethod
     def get(cls, id: str, engine: str = "sqlite") -> ProductInterface:
-
         with Session(cls._get_engine(engine)) as session:
             statement = select(ProductDB).where(ProductDB.id == id)
 
