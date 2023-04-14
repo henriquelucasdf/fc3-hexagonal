@@ -1,12 +1,15 @@
 import typer
+from rich import print
 from adapters.db.product_db import ProductDBPersistence
 
 from application.product_service import ProductService
-from application.product_interfaces import ProductInterface
+from application.product_interfaces import ProductInterface, ProductPersistenceInterface
 
-PERSISTENCES = {"sqlite": ProductDBPersistence()}
 
 app = typer.Typer(help="Product CLI management")
+
+
+PERSISTENCES = {"sqlite": ProductDBPersistence()}
 
 
 def persistence_validation(persistence: str):
@@ -19,34 +22,59 @@ def persistence_validation(persistence: str):
     return persistence
 
 
-@app.command(help="Create a Product")
+PERSISTENCE_OPTION = typer.Option(
+    default="sqlite",
+    help="The persistence used to save the product. "
+    f"Valid values are {list(PERSISTENCES.keys())}",
+    callback=persistence_validation,
+)
+
+
+@app.command()
 def create(
     name: str = typer.Option(..., help="The product name"),
     price: float = typer.Option(..., help="The product price"),
-    persistence: str = typer.Option(
-        default="sqlite",
-        help="The persistence used to save the product. "
-        f"Valid values are {list(PERSISTENCES.keys())}",
-        callback=persistence_validation,
-    ),
+    persistence: str = PERSISTENCE_OPTION,
 ) -> ProductInterface:
-    persistence_class = PERSISTENCES.get(persistence)
-    if persistence_class is None:
-        raise ValueError("error")
-
+    """
+    Create a product, using --name and --price arguments.
+    Returns the product ID, Status, Name and Price.
+    """
+    persistence_class = _get_persistence(persistence)
     service = ProductService(persistence_class)
 
     product = service.create(name, price)
     print(
-        "The product was successfully created!\n"
-        f"   Id: {product.get_id()}\n   Name: {product.get_name()}\n"
-        f"   Price: {product.get_price()}\n   Status: {product.get_status()}"
+        "  [bold green]The product was successfully created![/bold green]\n"
+        f"   [bold]Id:[/bold] {product.get_id()}\n"
+        f"   [bold]Name:[/bold] {product.get_name()}\n"
+        f"   [bold]Price:[/bold] {product.get_price()}\n"
+        f"   [bold]Status:[/bold] {product.get_status()}"
     )
 
 
-@app.command(help="Delete a product")
-def delete(id: str):
-    print(f"deleted the id: {id}")
+@app.command()
+def get(
+    id: str = typer.Option(..., help="The product ID"),
+    persistence: str = PERSISTENCE_OPTION,
+):
+    """
+    Get a product detail using it's ID
+    Returns the product ID, Status, Name and Price.
+    """
+    persistence_class = _get_persistence(persistence)
+    service = ProductService(persistence_class)
+
+    product = service.get(id)
+    print(product)
+
+
+def _get_persistence(persistence: str) -> ProductPersistenceInterface:
+    persistence_class = PERSISTENCES.get(persistence)
+    if persistence_class is None:
+        raise ValueError(f"Could not get persistence of type {persistence}")
+
+    return persistence_class
 
 
 if __name__ == "__main__":
