@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Session, create_engine, select, Field
-
+from adapters.db.interfaces import EngineInterface
+from sqlalchemy.future import Engine
 from application.product import Product
 from application.product_service import PersistenceException
 from application.product_interfaces import (
@@ -8,7 +9,13 @@ from application.product_interfaces import (
 )
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
-ENGINES = {"sqlite": create_engine(url="sqlite://", echo=False)}
+
+class SQLiteEngine(EngineInterface):
+    def __init__(self) -> None:
+        self._engine = create_engine(url="sqlite://", echo=False)
+    
+    def get(self) -> Engine:
+        return self._engine
 
 
 class ProductDB(SQLModel, table=True):
@@ -20,8 +27,8 @@ class ProductDB(SQLModel, table=True):
 
 class ProductDBPersistence(ProductPersistenceInterface):
     @classmethod
-    def get(cls, id: str, engine: str = "sqlite") -> ProductInterface:
-        with Session(cls._get_engine(engine)) as session:
+    def get(cls, id: str, engine: EngineInterface) -> ProductInterface:
+        with Session(engine.get()) as session:
             statement = select(ProductDB).where(ProductDB.id == id)
 
             try:
@@ -44,7 +51,7 @@ class ProductDBPersistence(ProductPersistenceInterface):
     def save(
         cls, product: ProductInterface, engine: str = "sqlite"
     ) -> ProductInterface:
-        with Session(cls._get_engine(engine)) as session:
+        with Session(engine.get()) as session:
             db_product = session.get(ProductDB, product.id)
 
             if db_product is None:
@@ -61,15 +68,3 @@ class ProductDBPersistence(ProductPersistenceInterface):
                 session.refresh(db_product)
 
         return product
-
-    @staticmethod
-    def _get_engine(engine: str):
-        sql_engine = ENGINES.get(engine)
-        if sql_engine is None:
-            raise ValueError(
-                f"The engine {engine} is invalid! Valid values are {ENGINES.keys()}"
-            )
-
-        SQLModel.metadata.create_all(sql_engine)
-
-        return sql_engine

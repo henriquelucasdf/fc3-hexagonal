@@ -66,4 +66,4 @@ class ProductWriter(ABC):
 
 
 class ProductPersistenceInterface(ProductReader, ProductWriter):
-    pass
+    ...
