@@ -26,7 +26,7 @@ async def health():
 
 
 @app.get("/product/get")
-async def get(id: str):
+def get(id: str):
     try:
         product = services["local"].get(id)
     except ProductServiceException as e:
@@ -42,8 +42,8 @@ async def get(id: str):
     }
 
 
-@app.get("/product/create")
-async def create(name: str, price: float):
+@app.post("/product/create")
+def create(name: str, price: float):
     try:
         product = services["local"].create(name, price)
     except ProductServiceException as e:
@@ -57,8 +57,8 @@ async def create(name: str, price: float):
         }
     }
 
-@app.get("/product/enable")
-async def enable(id: str):
+@app.post("/product/enable")
+def enable(id: str):
     try:
         product = services["local"].get(id)
     except ProductServiceException as e:
@@ -78,8 +78,8 @@ async def enable(id: str):
     }
 
 
-@app.get("/product/disable")
-async def disable(id: str):
+@app.post("/product/disable")
+def disable(id: str):
     try:
         product = services["local"].get(id)
     except ProductServiceException as e:
