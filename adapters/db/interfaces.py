@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from sqlalchemy.future import Engine
 
 
-class EngineInterface(ABC):
+class DatabaseInterface(ABC):
     def __init__(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def get(self) -> Any:
+    def get(self) -> Engine:
         raise NotImplementedError

@@ -3,17 +3,17 @@ from sqlmodel import Session, SQLModel
 from sqlalchemy.exc import NoResultFound
 
 from application.product import Product
-from application.product_service import PersistenceException
-from adapters.db.product_db import ProductDB, ProductDBPersistence, SQLiteEngine
+from application.product_service import PersistenceException, ProductService
+from adapters.db.product_db import ProductDB, ProductDBPersistence, SQLiteLocalDatabase
 
-engine = SQLiteEngine()
+db = SQLiteLocalDatabase()
 
 
 class TestProductDBPersistence:
     def setup_class(self):
-        SQLModel.metadata.create_all(engine.get())
+        SQLModel.metadata.create_all(db.get())
 
-        self.session = Session(engine.get())
+        self.session = Session(db.get())
         self.valid_product_1 = Product(
             name="valid_product_1", status="enabled", price=123
         )
@@ -27,10 +27,11 @@ class TestProductDBPersistence:
         self.session.commit()
 
     def teardown_class(self):
+        SQLModel.metadata.drop_all(db.get())
         self.session.close()
 
     def test_get_must_return_product(self):
-        product_db = ProductDBPersistence.get(self.valid_product_1.id, engine)
+        product_db = ProductDBPersistence(db).get(self.valid_product_1.id)
         assert product_db == self.valid_product_1
 
     def test_get_must_raise_error_if_no_product_is_found(self):
@@ -38,13 +39,13 @@ class TestProductDBPersistence:
             expected_exception=PersistenceException,
             match="No products were found with the id 'abcde'",
         ):
-            ProductDBPersistence.get(id="abcde", engine=engine)
+            ProductDBPersistence(db).get(id="abcde")
 
     def test_save_must_add_new_product(self):
         new_product = Product(name="new_product", status="enabled", price=20)
-        returned_product = ProductDBPersistence.save(new_product, engine)
+        returned_product = ProductDBPersistence(db).save(new_product)
 
-        product_query = ProductDBPersistence.get(new_product.id, engine)
+        product_query = ProductDBPersistence(db).get(new_product.id)
         assert product_query == new_product == returned_product
 
     def test_save_must_update_existing_product(self):
@@ -52,6 +53,14 @@ class TestProductDBPersistence:
         updated_product.name = "updated_product"
         updated_product.price = 12345
 
-        returned_product = ProductDBPersistence.save(updated_product, engine)
-        product_query = ProductDBPersistence.get(updated_product.id, engine)
+        returned_product = ProductDBPersistence(db).save(updated_product)
+        product_query = ProductDBPersistence(db).get(updated_product.id)
         assert product_query == updated_product == returned_product
+
+    def test_service_interaction_with_persistence(self):
+        persistence = ProductDBPersistence(db)
+        service = ProductService(persistence)
+        product_created = service.create(name="test-using-service", price=25)
+
+        product_saved = service.get(product_created.get_id())
+        assert product_created == product_saved

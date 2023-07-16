@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Session, create_engine, select, Field
-from adapters.db.interfaces import EngineInterface
+from adapters.db.interfaces import DatabaseInterface
 from sqlalchemy.future import Engine
 from application.product import Product
 from application.product_service import PersistenceException
@@ -10,10 +10,11 @@ from application.product_interfaces import (
 from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
 
-class SQLiteEngine(EngineInterface):
+class SQLiteLocalDatabase(DatabaseInterface):
     def __init__(self) -> None:
-        self._engine = create_engine(url="sqlite://", echo=False)
-    
+        self._engine = create_engine(url="sqlite:///sqlite.db", echo=False)
+        SQLModel.metadata.create_all(self._engine)
+
     def get(self) -> Engine:
         return self._engine
 
@@ -26,9 +27,11 @@ class ProductDB(SQLModel, table=True):
 
 
 class ProductDBPersistence(ProductPersistenceInterface):
-    @classmethod
-    def get(cls, id: str, engine: EngineInterface) -> ProductInterface:
-        with Session(engine.get()) as session:
+    def __init__(self, db: DatabaseInterface) -> None:
+        self.db = db
+
+    def get(self, id: str) -> ProductInterface:
+        with Session(self.db.get()) as session:
             statement = select(ProductDB).where(ProductDB.id == id)
 
             try:
@@ -47,11 +50,8 @@ class ProductDBPersistence(ProductPersistenceInterface):
 
         return Product(**product_query.dict())
 
-    @classmethod
-    def save(
-        cls, product: ProductInterface, engine: str = "sqlite"
-    ) -> ProductInterface:
-        with Session(engine.get()) as session:
+    def save(self, product: ProductInterface) -> ProductInterface:
+        with Session(self.db.get()) as session:
             db_product = session.get(ProductDB, product.id)
 
             if db_product is None:
